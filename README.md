@@ -4,7 +4,7 @@
 Welcome!
 
 
-Authors
+Author
 -------
 
 **Linda Yang**
