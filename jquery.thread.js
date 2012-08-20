@@ -1,3 +1,15 @@
+/*
+
+call like thus:
+
+jQuery(document).ready(function() {
+    jQuery('#content').thread({
+        blockClass: 'article'
+    });
+});
+
+*/
+
 ;(function($, window, document, undefined) {
 
     var pluginName = 'thread',
@@ -178,9 +190,3 @@
     };
 
 })(jQuery, window, document);
-
-jQuery(document).ready(function() {
-    jQuery('#content').thread({
-        blockClass: 'article'
-    });
-});
