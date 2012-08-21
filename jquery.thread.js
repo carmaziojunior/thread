@@ -10,7 +10,8 @@ jQuery(document).ready(function() {
 
 */
 
-;(function($, window, document, undefined) {
+;
+(function($, window, document, undefined) {
 
     var pluginName = 'thread',
         defaults = {
@@ -18,19 +19,19 @@ jQuery(document).ready(function() {
             blockClass: pluginName + '-block',
             columnClass: pluginName + '-column',
             layout: {
-                columnWidth: 0,
                 columnNumber: {
                     'mobile-vertical': 1,
                     'mobile-horizontal': 1,
                     'ereader': 1,
                     'tablet-vertical': 1,
-                    'default': 2,
-                    'desktop': 3
+                    'tablet-horizontal': 1,
+                    'desktop': 2,
+                    'desktop-large': 3
                 },
                 gutter: '4%'
             },
             animation: {
-                effect: false,
+                effect: 'fadeIn',
                 duration: 500
             },
             onInitial: function() {},
@@ -55,43 +56,76 @@ jQuery(document).ready(function() {
             this.$grid.css({
                 'position': 'relative'
             });
+            this.$blocks = [];
             if (this.options.blocks !== null) {
-                this.$blocks = this.options.blocks;
+                this.blocks = this.options.blocks;
             } else if (this.options.blockClass != this._defaults.blockClass) {
-                this.$blocks = jQuery(this.options.blockClass);
+                this.blocks = jQuery(this.options.blockClass);
             } else {
-                this.$blocks = jQuery('.' + this.options.blockClass);
+                this.blocks = jQuery('.' + this.options.blockClass);
             }
-            this.blockNumber = this.$blocks.length;
+            this.blockNumber = this.blocks.length;
             this.calculateGrid().createColumns(this.columnNumber);
-            this.renderBlock(0);
+            this.renderBlock(0, this.columnNumber);
+            jQuery(window).resize(function(e) {
+                console.log(e);
+                var currentColumnNumber = data.columnNumber,
+                    currentGutter = data.gutter,
+                    i, resized = data.calculateGrid(),
+                    newColumnNumber = resized.columnNumber;
+                if (currentColumnNumber != newColumnNumber) {
+                    window.location.reload();
+                } else {
+                    console.log(resized.columnWidth, resized.gutter);
+                    var difference = resized.gutter - currentGutter;
+                    jQuery(resized.$blocks).each(function(i) {
+                        if (i >= newColumnNumber) {
+                            jQuery(this).css({
+                                marginTop: jQuery(this).css('margin-top') - difference
+                            });
+                        }
+                    });
+                    if (newColumnNumber > 1) {
+                        resized.$columns.each(function(i) {
+                            jQuery(this).css({
+                                width: resized.columnWidth,
+                                left: resized.columnWidth * i + resized.gutter * i
+                            });
+                            console.log(resized.columnWidth, 'column' + i);
+                            resized.calculateShortest(difference * i, jQuery(this));
+                        });
+                    }
+                }
+            });
         },
-        renderBlock: function(index) {
-            if (count < this.blockNumber) {
+        renderBlock: function(index, columnNumber) {
+            if (index < this.blockNumber) {
                 var data = this,
-                    $block = jQuery(this.$blocks[index]).attr('id', this.options.blockClass + '-' + (index + 1)).addClass(this.options.blockClass),
+                    $block = jQuery(this.blocks[index]).attr('id', this.options.blockClass + '-' + (index + 1)).addClass(this.options.blockClass),
                     $blockImages = $block.find('img'),
                     blockImagesNumber = $blockImages.length,
-                    offset = this.gutter,
                     column = this.minColumn,
                     $column = jQuery(column),
                     currentHeight = $column.height(),
+                    animation = this.options.animation,
+                    duration = animation.duration,
+                    offset = this.gutter,
                     blockCSS = {
-                        'position': 'absolute',
                         'margin': 0,
                         'padding': 0,
                         'width': '100%',
-                        top: currentHeight,
-                        left: 0
+                        marginTop: this.gutter
                     },
                     callback = function() {
                         offset += $block.height();
-                        data.calculateShortest(offset, $column);
+                        if (columnNumber > 1) {
+                            data.calculateShortest(offset, $column);
+                        }
                         data.options.onOneLoad($block);
-                        data.renderBlock(index + 1);
-                    },
-                    animation = this.options.animation,
-                    duration = animation.duration;
+                        data.$blocks.push($block);
+                        data.renderBlock(index + 1, columnNumber);
+                    };
+                console.log($block);
                 $block.appendTo(column).hide();
                 if (animation.effect == 'fadeIn') {
                     $block.delay(duration * count).fadeIn(duration).css(blockCSS);
@@ -100,13 +134,18 @@ jQuery(document).ready(function() {
                 } else {
                     $block.show().css(blockCSS);
                 }
+                if (index < columnNumber) {
+                    $block.css({
+                        'margin': 0
+                    });
+                }
                 count++;
                 if (blockImagesNumber > 0) {
                     $blockImages.on('load', callback);
                 } else {
                     callback();
                 }
-            } else if (count == this.blockNumber) {
+            } else if (index == this.blockNumber) {
                 this.options.onAllLoad();
             }
         },
@@ -119,18 +158,27 @@ jQuery(document).ready(function() {
             }
         },
         createColumns: function(number) {
-            var i, width = this.options.layout.columnWidth,
+            var i, width = this.columnWidth,
                 gutter = this.gutter,
                 columnClass = this.options.columnClass;
             for (i = 0; i < number; i++) {
-                var $column = jQuery('<div></div>').attr('id', columnClass + '-' + (i + 1)).addClass(columnClass).width(width).css({
-                    'position': 'absolute',
-                    left: width * i + gutter * i
-                });
+                var $column = jQuery('<div></div>').attr('id', columnClass + '-' + (i + 1)).addClass(columnClass);
+                if (number > 1) {
+                    $column.css({
+                        'position': 'absolute',
+                        width: width,
+                        left: width * i + gutter * i
+                    });
+                }
                 this.$grid.append($column);
             }
             this.$columns = jQuery('.' + this.options.columnClass);
-            this.calculateShortest();
+            if (number > 1) {
+                this.calculateShortest();
+            } else {
+                this.minColumn = this.$columns[0];
+            }
+            console.log(this.minColumn);
         },
         calculateShortest: function(offset, currentColumn) {
             if (currentColumn) {
@@ -165,17 +213,19 @@ jQuery(document).ready(function() {
                 this.layout = 'mobile-vertical';
             } else if (this.windowWidth <= 480 && this.windowWidth > 360) {
                 this.layout = 'mobile-horizontal';
-            } else if (this.windowWidth <= 767 && this.windowWidth > 480) {
+            } else if (this.windowWidth <= 768 && this.windowWidth > 480) {
                 this.layout = 'ereader';
-            } else if (this.windowWidth <= 979 && this.windowWidth > 767) {
+            } else if (this.windowWidth <= 980 && this.windowWidth > 768) {
                 this.layout = 'tablet-vertical';
-            } else if (this.windowWidth <= 1199 && this.windowWidth > 979) {
-                this.layout = 'default';
-            } else {
+            } else if (this.windowWidth <= 1024 && this.windowWidth > 980) {
+                this.layout = 'tablet-horizontal';
+            } else if (this.windowWidth <= 1200 && this.windowWidth > 1024) {
                 this.layout = 'desktop';
+            } else if (this.windowWidth > 1200) {
+                this.layout = 'desktop-large';
             }
             this.columnNumber = this.options.layout.columnNumber[this.layout];
-            this.options.layout.columnWidth = (this.gridWidth - (this.columnNumber - 1) * this.gutter) / this.columnNumber;
+            this.columnWidth = (this.gridWidth - (this.columnNumber - 1) * this.gutter) / this.columnNumber;
             console.log(this);
             return this;
         }
