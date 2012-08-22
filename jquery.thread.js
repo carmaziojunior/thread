@@ -10,12 +10,12 @@ jQuery(document).ready(function() {
 
 */
 
-;
-(function($, window, document, undefined) {
+;(function($, window, document, undefined) {
 
     var pluginName = 'thread',
         defaults = {
             blocks: null,
+            gridClass: pluginName + '-grid',
             blockClass: pluginName + '-block',
             columnClass: pluginName + '-column',
             layout: {
@@ -30,10 +30,7 @@ jQuery(document).ready(function() {
                 },
                 gutter: '4%'
             },
-            animation: {
-                effect: 'fadeIn',
-                duration: 500
-            },
+            duration: 300,
             onInitial: function() {},
             onOneLoad: function(el) {},
             onAllLoad: function() {}
@@ -51,24 +48,22 @@ jQuery(document).ready(function() {
     Thread.prototype = {
         init: function() {
             var data = this,
-                i = 0;
-            this.$grid = jQuery(this.element);
-            this.$grid.css({
-                'position': 'relative'
-            });
+                i = 0,
+                gridElement = jQuery('<div/>').addClass(this.options.gridClass).css({
+                    'position': 'relative'
+                });
+            this.$grid = jQuery(this.element).wrap(gridElement);
             this.$blocks = [];
             if (this.options.blocks !== null) {
-                this.blocks = this.options.blocks;
-            } else if (this.options.blockClass != this._defaults.blockClass) {
-                this.blocks = jQuery(this.options.blockClass);
+                this.$blocks = this.options.blocks;
+                this.type = 'dynamic';
             } else {
-                this.blocks = jQuery('.' + this.options.blockClass);
+                this.$blocks = jQuery(this.element).children();
+                this.type = 'static';
             }
-            this.blockNumber = this.blocks.length;
-            this.calculateGrid().createColumns(this.columnNumber);
-            this.renderBlock(0, this.columnNumber);
+            this.blockNumber = this.$blocks.length;
+            this.calculateGrid('initial').createColumns(this.columnNumber).renderBlock(0, this.columnNumber);
             jQuery(window).resize(function(e) {
-                console.log(e);
                 var currentColumnNumber = data.columnNumber,
                     currentGutter = data.gutter,
                     i, resized = data.calculateGrid(),
@@ -76,24 +71,34 @@ jQuery(document).ready(function() {
                 if (currentColumnNumber != newColumnNumber) {
                     window.location.reload();
                 } else {
-                    console.log(resized.columnWidth, resized.gutter);
-                    var difference = resized.gutter - currentGutter;
-                    jQuery(resized.$blocks).each(function(i) {
-                        if (i >= newColumnNumber) {
-                            jQuery(this).css({
-                                marginTop: jQuery(this).css('margin-top') - difference
-                            });
-                        }
+                    var columns = resized.$columns;
+                    columns.each(function(i) {
+                        jQuery(this).children().each(function(i) {
+                            if (i >= newColumnNumber) {
+                                jQuery(this).css({
+                                    marginTop: resized.gutter
+                                });
+                            }
+                        });
                     });
+
                     if (newColumnNumber > 1) {
-                        resized.$columns.each(function(i) {
+                        var columnHeights = [];
+                        columns.each(function(i) {
+                            var firstChild = jQuery(this).children().eq(0),
+                                lastChild = jQuery(this).children().last(),
+                                columnHeight = lastChild.position().top + lastChild.outerHeight(true);
+                            columnHeights.push(columnHeight);
                             jQuery(this).css({
+                                height: columnHeight,
                                 width: resized.columnWidth,
                                 left: resized.columnWidth * i + resized.gutter * i
                             });
-                            console.log(resized.columnWidth, 'column' + i);
-                            resized.calculateShortest(difference * i, jQuery(this));
+                            firstChild.css({
+                                marginTop: 0
+                            });
                         });
+                        resized.$grid.height(Math.max.apply(null, columnHeights));
                     }
                 }
             });
@@ -101,50 +106,41 @@ jQuery(document).ready(function() {
         renderBlock: function(index, columnNumber) {
             if (index < this.blockNumber) {
                 var data = this,
-                    $block = jQuery(this.blocks[index]).attr('id', this.options.blockClass + '-' + (index + 1)).addClass(this.options.blockClass),
+                    gutter = 0;
+                if (index >= this.columnNumber) {
+                    gutter = this.gutter;
+                }
+                var $block = jQuery(this.$blocks[index]).attr('id', this._defaults.blockClass + '-' + (index + 1)).addClass(this._defaults.blockClass).css({
+                    'margin': 0,
+                    'padding': 0,
+                    'width': '100%',
+                    marginTop: gutter
+                }),
                     $blockImages = $block.find('img'),
                     blockImagesNumber = $blockImages.length,
                     column = this.minColumn,
                     $column = jQuery(column),
-                    currentHeight = $column.height(),
-                    animation = this.options.animation,
-                    duration = animation.duration,
-                    offset = this.gutter,
-                    blockCSS = {
-                        'margin': 0,
-                        'padding': 0,
-                        'width': '100%',
-                        marginTop: this.gutter
-                    },
+                    offset, duration = this.options.duration,
                     callback = function() {
-                        offset += $block.height();
+                        offset = $block.outerHeight() + gutter;
                         if (columnNumber > 1) {
                             data.calculateShortest(offset, $column);
                         }
                         data.options.onOneLoad($block);
-                        data.$blocks.push($block);
                         data.renderBlock(index + 1, columnNumber);
                     };
-                console.log($block);
+                if (index === 0) {
+                    data.$grid.fadeIn();
+                }
                 $block.appendTo(column).hide();
-                if (animation.effect == 'fadeIn') {
-                    $block.delay(duration * count).fadeIn(duration).css(blockCSS);
-                } else if (animation.effect == 'slideDown') {
-                    $block.delay(duration * count).slideDown(duration).css(blockCSS);
-                } else {
-                    $block.show().css(blockCSS);
-                }
-                if (index < columnNumber) {
-                    $block.css({
-                        'margin': 0
-                    });
-                }
-                count++;
-                if (blockImagesNumber > 0) {
+                if (blockImagesNumber > 0 && this.type == 'dynamic') {
+                    $block.delay(duration * index).fadeIn(duration);
                     $blockImages.on('load', callback);
                 } else {
+                    $block.delay(duration * index).fadeIn(duration);
                     callback();
                 }
+                count++;
             } else if (index == this.blockNumber) {
                 this.options.onAllLoad();
             }
@@ -178,17 +174,15 @@ jQuery(document).ready(function() {
             } else {
                 this.minColumn = this.$columns[0];
             }
-            console.log(this.minColumn);
+            return this;
         },
-        calculateShortest: function(offset, currentColumn) {
-            if (currentColumn) {
-                currentColumn.css({
-                    height: currentColumn.height() + offset
-                });
-            }
+        calculateShortest: function(addedHeight, currentColumn) {
             var columns = this.$columns,
                 columnHeights = [],
                 i;
+            if (currentColumn) {
+                currentColumn.height(addedHeight + currentColumn.height());
+            }
             columnHeights = columns.map(function(i, el) {
                 return jQuery(el).height();
             });
@@ -204,11 +198,10 @@ jQuery(document).ready(function() {
             })[0];
             this.$grid.height(jQuery(this.maxColumn).height());
         },
-        calculateGrid: function() {
+        calculateGrid: function(status) {
             this.windowWidth = jQuery(window).width();
             this.gridWidth = this.$grid.innerWidth();
             this.gutter = this.analyzeUnits(this.options.layout.gutter, this.gridWidth);
-            this.currentHeight = 0;
             if (this.windowWidth <= 360) {
                 this.layout = 'mobile-vertical';
             } else if (this.windowWidth <= 480 && this.windowWidth > 360) {
@@ -226,7 +219,9 @@ jQuery(document).ready(function() {
             }
             this.columnNumber = this.options.layout.columnNumber[this.layout];
             this.columnWidth = (this.gridWidth - (this.columnNumber - 1) * this.gutter) / this.columnNumber;
-            console.log(this);
+            if (this.type == 'static' && status == 'initial') {
+                this.$blocks.hide();
+            }
             return this;
         }
     };
