@@ -1,14 +1,8 @@
-/*
-
-call like thus:
-
-jQuery(document).ready(function() {
-    jQuery('#content').thread({
-        blockClass: 'article'
-    });
-});
-
-*/
+// jquery.thread.js - v0.0.1 - 8/26/2012
+// https://github.com/yanglindayang/thread
+// Copyright (c) 2012 Yang Linda Yang
+// http://yanglindayang.com / yanglindayang@gmail.com
+// GPL Licensed
 
 ;(function($, window, document, undefined) {
 
