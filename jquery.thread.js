@@ -52,7 +52,10 @@ jQuery(document).ready(function() {
                 gridElement = jQuery('<div/>').addClass(this.options.gridClass).css({
                     'position': 'relative'
                 });
+<<<<<<< HEAD
             jQuery(this.element).hide();
+=======
+>>>>>>> f41a1891afb84c10301cb9e954c699a49a6d0e4b
             this.$grid = jQuery(this.element).wrap(gridElement);
             this.$blocks = [];
             if (this.options.blocks !== null) {
@@ -178,6 +181,7 @@ jQuery(document).ready(function() {
             return this;
         },
         calculateShortest: function(addedHeight, currentColumn) {
+<<<<<<< HEAD
             if (currentColumn) {
             //console.log(currentColumn.height());
                 currentColumn.height(addedHeight + currentColumn.height());
@@ -185,6 +189,14 @@ jQuery(document).ready(function() {
             var columns = this.$columns,
                 columnHeights = [],
                 i;
+=======
+            var columns = this.$columns,
+                columnHeights = [],
+                i;
+            if (currentColumn) {
+                currentColumn.height(addedHeight + currentColumn.height());
+            }
+>>>>>>> f41a1891afb84c10301cb9e954c699a49a6d0e4b
             columnHeights = columns.map(function(i, el) {
                 return jQuery(el).height();
             });
@@ -199,7 +211,10 @@ jQuery(document).ready(function() {
                 }
             })[0];
             this.$grid.height(jQuery(this.maxColumn).height());
+<<<<<<< HEAD
             console.log(columnHeights);
+=======
+>>>>>>> f41a1891afb84c10301cb9e954c699a49a6d0e4b
         },
         calculateGrid: function(status) {
             this.windowWidth = jQuery(window).width();
