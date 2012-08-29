@@ -46,13 +46,13 @@
                 gridElement = jQuery('<div/>').addClass(this.options.gridClass).css({
                     'position': 'relative'
                 });
-            jQuery(this.element).hide();
             this.$grid = jQuery(this.element).wrap(gridElement);
             this.$blocks = [];
             if (this.options.blocks !== null) {
                 this.$blocks = this.options.blocks;
                 this.type = 'dynamic';
             } else {
+                jQuery(this.element).hide();
                 this.$blocks = jQuery(this.element).children();
                 this.type = 'static';
             }
@@ -198,6 +198,7 @@
         calculateGrid: function(status) {
             this.windowWidth = jQuery(window).width();
             this.gridWidth = this.$grid.innerWidth();
+            console.log(this);
             this.gutter = this.analyzeUnits(this.options.layout.gutter, this.gridWidth);
             if (this.windowWidth <= 360) {
                 this.layout = 'mobile-vertical';
