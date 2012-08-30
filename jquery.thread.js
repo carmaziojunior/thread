@@ -173,7 +173,6 @@
         },
         calculateShortest: function(addedHeight, currentColumn) {
             if (currentColumn) {
-            //console.log(currentColumn.height());
                 currentColumn.height(addedHeight + currentColumn.height());
             }
             var columns = this.$columns,
@@ -193,12 +192,10 @@
                 }
             })[0];
             this.$grid.height(jQuery(this.maxColumn).height());
-            console.log(columnHeights);
         },
         calculateGrid: function(status) {
             this.windowWidth = jQuery(window).width();
             this.gridWidth = this.$grid.innerWidth();
-            console.log(this);
             this.gutter = this.analyzeUnits(this.options.layout.gutter, this.gridWidth);
             if (this.windowWidth <= 360) {
                 this.layout = 'mobile-vertical';
