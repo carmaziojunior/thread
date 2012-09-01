@@ -26,7 +26,7 @@
             },
             duration: 300,
             onInitial: function() {},
-            onOneLoad: function(el) {},
+            onOneLoad: function() {},
             onAllLoad: function() {}
         },
         count = 0;
@@ -46,7 +46,7 @@
                 gridElement = jQuery('<div/>').addClass(this.options.gridClass).css({
                     'position': 'relative'
                 });
-            this.$grid = jQuery(this.element).wrap(gridElement);
+            this.$grid = jQuery(this.element).height('auto').wrap(gridElement);
             this.$blocks = [];
             if (this.options.blocks !== null) {
                 this.$blocks = this.options.blocks;
@@ -115,22 +115,27 @@
                     blockImagesNumber = $blockImages.length,
                     column = this.minColumn,
                     $column = jQuery(column),
-                    offset, duration = this.options.duration,
+                    offset = 0,
+                    duration = this.options.duration,
                     callback = function() {
                         offset = $block.outerHeight() + gutter;
                         if (columnNumber > 1) {
                             data.calculateShortest(offset, $column);
                         }
-                        data.options.onOneLoad($block);
+                        data.options.onOneLoad();
                         data.renderBlock(index + 1, columnNumber);
                     };
                 if (index === 0) {
                     data.$grid.fadeIn();
                 }
                 $block.appendTo(column).hide();
-                if (blockImagesNumber > 0 && this.type == 'dynamic') {
+                if (blockImagesNumber > 0) {
                     $block.delay(duration * index).fadeIn(duration);
-                    $blockImages.on('load', callback);
+                    $blockImages.one('load', callback).each(function() {
+                        if (this.complete) {
+                            callback();
+                        }
+                    });   
                 } else {
                     $block.delay(duration * index).fadeIn(duration);
                     callback();
@@ -195,7 +200,7 @@
         },
         calculateGrid: function(status) {
             this.windowWidth = jQuery(window).width();
-            this.gridWidth = this.$grid.innerWidth();
+            this.gridWidth = this.$grid.parent().width();
             this.gutter = this.analyzeUnits(this.options.layout.gutter, this.gridWidth);
             if (this.windowWidth <= 360) {
                 this.layout = 'mobile-vertical';
