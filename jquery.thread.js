@@ -46,7 +46,8 @@
                 gridElement = jQuery('<div/>').addClass(this.options.gridClass).css({
                     'position': 'relative'
                 });
-            this.$grid = jQuery(this.element).height('auto').wrap(gridElement);
+            jQuery(this.element).height(0);
+            this.$grid = jQuery(this.element).wrap(gridElement);
             this.$blocks = [];
             if (this.options.blocks !== null) {
                 this.$blocks = this.options.blocks;
@@ -220,7 +221,6 @@
             this.columnNumber = this.options.layout.columnNumber[this.layout];
             this.columnWidth = (this.gridWidth - (this.columnNumber - 1) * this.gutter) / this.columnNumber;
             if (this.type == 'static' && status == 'initial') {
-                this.$grid.height(0);
                 this.$blocks.hide();
             }
             return this;
