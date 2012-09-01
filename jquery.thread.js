@@ -17,8 +17,8 @@
                     'mobile-vertical': 1,
                     'mobile-horizontal': 1,
                     'ereader': 1,
-                    'tablet-vertical': 1,
-                    'tablet-horizontal': 1,
+                    'tablet-vertical': 2,
+                    'tablet-horizontal': 2,
                     'desktop': 2,
                     'desktop-large': 3
                 },
@@ -46,7 +46,6 @@
                 gridElement = jQuery('<div/>').addClass(this.options.gridClass).css({
                     'position': 'relative'
                 });
-            jQuery(this.element).height(0);
             this.$grid = jQuery(this.element).wrap(gridElement);
             this.$blocks = [];
             if (this.options.blocks !== null) {
@@ -109,7 +108,6 @@
                 var $block = jQuery(this.$blocks[index]).attr('id', this._defaults.blockClass + '-' + (index + 1)).addClass(this._defaults.blockClass).css({
                     'margin': 0,
                     'padding': 0,
-                    'width': '100%',
                     marginTop: gutter
                 }),
                     $blockImages = $block.find('img'),
@@ -119,7 +117,8 @@
                     offset = 0,
                     duration = this.options.duration,
                     callback = function() {
-                        offset = $block.outerHeight() + gutter;
+                        offset = $block.height() + gutter;
+                        console.log($block, offset);
                         if (columnNumber > 1) {
                             data.calculateShortest(offset, $column);
                         }
@@ -127,19 +126,21 @@
                         data.renderBlock(index + 1, columnNumber);
                     };
                 if (index === 0) {
-                    data.$grid.fadeIn();
+                    this.$grid.fadeIn();
                 }
-                $block.appendTo(column).hide();
+                $block.hide().appendTo(column);
                 if (blockImagesNumber > 0) {
-                    $block.delay(duration * index).fadeIn(duration);
-                    $blockImages.one('load', callback).each(function() {
-                        if (this.complete) {
-                            callback();
-                        }
+                    $block.fadeIn(duration, function() {
+                        $blockImages.one('load', callback).each(function() {
+                            if (this.complete) {
+                                callback();
+                            }
+                        });
                     });   
                 } else {
-                    $block.delay(duration * index).fadeIn(duration);
-                    callback();
+                    $block.fadeIn(duration, function() {
+                        callback();
+                    });
                 }
                 count++;
             } else if (index == this.blockNumber) {
@@ -164,7 +165,8 @@
                     $column.css({
                         'position': 'absolute',
                         width: width,
-                        left: width * i + gutter * i
+                        left: width * i + gutter * i,
+                        height: 0
                     });
                 }
                 this.$grid.append($column);
@@ -178,6 +180,7 @@
             return this;
         },
         calculateShortest: function(addedHeight, currentColumn) {
+            console.log(this.$grid.height());
             if (currentColumn) {
                 currentColumn.height(addedHeight + currentColumn.height());
             }
@@ -187,6 +190,7 @@
             columnHeights = columns.map(function(i, el) {
                 return jQuery(el).height();
             });
+            console.log(columnHeights);
             this.minColumn = columns.map(function(i, el) {
                 if (jQuery(el).height() == Math.min.apply(null, columnHeights)) {
                     return el;
@@ -207,9 +211,9 @@
                 this.layout = 'mobile-vertical';
             } else if (this.windowWidth <= 480 && this.windowWidth > 360) {
                 this.layout = 'mobile-horizontal';
-            } else if (this.windowWidth <= 768 && this.windowWidth > 480) {
+            } else if (this.windowWidth < 768 && this.windowWidth > 480) {
                 this.layout = 'ereader';
-            } else if (this.windowWidth <= 980 && this.windowWidth > 768) {
+            } else if (this.windowWidth < 980 && this.windowWidth >= 768) {
                 this.layout = 'tablet-vertical';
             } else if (this.windowWidth <= 1024 && this.windowWidth > 980) {
                 this.layout = 'tablet-horizontal';
@@ -223,6 +227,7 @@
             if (this.type == 'static' && status == 'initial') {
                 this.$blocks.hide();
             }
+            console.log(this);
             return this;
         }
     };
