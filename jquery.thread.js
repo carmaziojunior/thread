@@ -220,6 +220,7 @@
             this.columnNumber = this.options.layout.columnNumber[this.layout];
             this.columnWidth = (this.gridWidth - (this.columnNumber - 1) * this.gutter) / this.columnNumber;
             if (this.type == 'static' && status == 'initial') {
+                this.$grid.height(0);
                 this.$blocks.hide();
             }
             return this;
