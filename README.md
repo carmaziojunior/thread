@@ -10,9 +10,13 @@ A jQuery plugin to render block elements of uneven heights into responsive grid 
 
 ```js
 jQuery(document).ready(function() {
-    jQuery('#content').thread();
+    jQuery('.thread').thread();
 });
 ```
+
+## Examples
+
+[http://notes.yanglindayang.com](http://notes.yanglindayang.com)
 
 ## Caveats
 
