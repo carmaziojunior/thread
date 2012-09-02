@@ -118,7 +118,6 @@
                     duration = this.options.duration,
                     callback = function() {
                         offset = $block.height() + gutter;
-                        console.log($block, offset);
                         if (columnNumber > 1) {
                             data.calculateShortest(offset, $column);
                         }
@@ -180,7 +179,6 @@
             return this;
         },
         calculateShortest: function(addedHeight, currentColumn) {
-            console.log(this.$grid.height());
             if (currentColumn) {
                 currentColumn.height(addedHeight + currentColumn.height());
             }
@@ -190,7 +188,6 @@
             columnHeights = columns.map(function(i, el) {
                 return jQuery(el).height();
             });
-            console.log(columnHeights);
             this.minColumn = columns.map(function(i, el) {
                 if (jQuery(el).height() == Math.min.apply(null, columnHeights)) {
                     return el;
@@ -227,7 +224,6 @@
             if (this.type == 'static' && status == 'initial') {
                 this.$blocks.hide();
             }
-            console.log(this);
             return this;
         }
     };
