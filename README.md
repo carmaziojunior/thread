@@ -5,6 +5,7 @@ A jQuery plugin to render block elements of uneven heights into responsive grid 
 ## Features
 
 * Accepts array of dynamically generated elements or a selector for the container element.
+* Attempts to create more even/equal-height columns by adding blocks to the shortest column.
 
 ## Usage
 
@@ -26,7 +27,9 @@ jQuery(document).ready(function() {
 
 * Structure using Backbone.
 * Build out true responsiveness by recalculating dynamically without page refresh.
+* Convert to absolute horizontal positioning by block.
 * Support taking JSONP feed and template rendering.
+* Allow individual elements to span two or three columns. Print layouts yeaahhh.
 * Add slide down effect option.
 
 ## License
